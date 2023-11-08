@@ -51,7 +51,7 @@ class DebugInfo extends StatelessWidget {
                                 );
                               },
                               separatorBuilder: (context, index) =>
-                                  const Divider(color: Colors.deepPurple),
+                                  const Divider(color: Colors.lightGreen),
                               itemCount: upcomingNotifications.length),
                         );
                       });
@@ -81,7 +81,7 @@ class DebugInfo extends StatelessWidget {
                                   },
                                   separatorBuilder: (context, index) =>
                                       const Divider(
-                                        color: Colors.deepPurple,
+                                        color: Colors.lightGreen,
                                       ),
                                   itemCount: activeGeofenceNames.length)
                               : const Text("No active geofences."),
@@ -113,7 +113,7 @@ class DebugInfo extends StatelessWidget {
                                   },
                                   separatorBuilder: (context, index) =>
                                       const Divider(
-                                        color: Colors.deepPurple,
+                                        color: Colors.lightGreen,
                                       ),
                                   itemCount: currentlyGeofences.length)
                               : const Text("Not currently in any geofences."),
@@ -146,7 +146,7 @@ class DebugInfo extends StatelessWidget {
                                   },
                                   separatorBuilder: (context, index) =>
                                       const Divider(
-                                        color: Colors.deepPurple,
+                                        color: Colors.lightGreen,
                                       ),
                                   itemCount: geofenceNamesAndDistances.length)
                               : const Text("No geofences."),

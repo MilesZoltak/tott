@@ -10,13 +10,12 @@ import 'package:rxdart/rxdart.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 
-
 UserSessionInfo? loginInfo;
 
 /* ~~~~~~~ This is where the land of local notifications begins ~~~~~ */
 //load up FLN
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-FlutterLocalNotificationsPlugin();
+    FlutterLocalNotificationsPlugin();
 
 // how we will represent notifications
 class ReceivedNotification {
@@ -50,15 +49,15 @@ const String darwinNotificationCategoryPlain = 'plainCategory';
 /// Streams are created so that app can respond to notification-related events
 /// since the plugin is initialised in the `main` function
 final StreamController<ReceivedNotification> didReceiveLocalNotificationStream =
-StreamController<ReceivedNotification>.broadcast();
+    StreamController<ReceivedNotification>.broadcast();
 
 final StreamController<String?> selectNotificationStream =
-StreamController<String?>.broadcast();
+    StreamController<String?>.broadcast();
 
 // const MethodChannel platform =
 //     MethodChannel('dexterx.dev/flutter_local_notifications_example');
-const MethodChannel platform = MethodChannel(
-    'talkofthetown.dev/testMethodChannel');
+const MethodChannel platform =
+    MethodChannel('talkofthetown.dev/testMethodChannel');
 
 const String portName = 'notification_send_port';
 
@@ -98,7 +97,7 @@ Future<void> main() async {
   await _configureLocalTimeZone();
   // dealing with the case where the app is launched from a notification
   final NotificationAppLaunchDetails? notificationAppLaunchDetails =
-  await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
+      await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
 
   bool fromNotification =
       notificationAppLaunchDetails?.didNotificationLaunchApp ?? false;
@@ -111,13 +110,13 @@ Future<void> main() async {
   }
 
   const AndroidInitializationSettings initializationSettingsAndroid =
-  AndroidInitializationSettings('app_icon');
+      AndroidInitializationSettings('app_icon');
 
   /// Note: permissions aren't requested here just to demonstrate that can be
   /// done later
   // borrowed from local notifications sample app
   final List<DarwinNotificationCategory> darwinNotificationCategories =
-  <DarwinNotificationCategory>[
+      <DarwinNotificationCategory>[
     DarwinNotificationCategory(
       darwinNotificationCategoryText,
       actions: <DarwinNotificationAction>[
@@ -164,7 +163,7 @@ Future<void> main() async {
   /// Note: permissions aren't requested here just to demonstrate that can be
   /// done later
   final DarwinInitializationSettings initializationSettingsDarwin =
-  DarwinInitializationSettings(
+      DarwinInitializationSettings(
     requestAlertPermission: false,
     requestBadgePermission: false,
     requestSoundPermission: false,
@@ -220,6 +219,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: MaterialApp(
@@ -232,16 +236,16 @@ class MyApp extends StatelessWidget {
         themeMode: ThemeMode.dark,
         darkTheme: ThemeData.dark().copyWith(
             checkboxTheme:
-            const CheckboxThemeData(side: BorderSide(color: Colors.grey)),
+                const CheckboxThemeData(side: BorderSide(color: Colors.grey)),
             listTileTheme: const ListTileThemeData(
                 titleTextStyle: TextStyle(color: Colors.grey, fontSize: 16)),
             textButtonTheme: TextButtonThemeData(
               style:
-              TextButton.styleFrom(foregroundColor: Colors.deepPurple[300]),
+                  TextButton.styleFrom(foregroundColor: Colors.lightGreen[300]),
             ),
             outlinedButtonTheme: OutlinedButtonThemeData(
               style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.deepPurple[300],
+                  foregroundColor: Colors.lightGreen[300],
                   textStyle: const TextStyle(fontSize: 18),
                   side: const BorderSide(width: 2.0, color: Colors.grey)),
             ),
@@ -249,9 +253,9 @@ class MyApp extends StatelessWidget {
             appBarTheme: const AppBarTheme(
               foregroundColor: Colors.white,
               backgroundColor:
-              Colors.deepPurple, // Set the default AppBar background color.
+                  Colors.lightGreen, // Set the default AppBar background color.
             ),
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)),
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightGreen)),
         debugShowCheckedModeBanner: false,
         home: const Wrapper(),
       ),

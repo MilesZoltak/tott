@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:talk_of_the_town/Models/bridge_dart_sdk/bridge_sdk.models.swagger.dart';
-import 'package:talk_of_the_town/Screens/Informed%20Consent/consent.dart';
+import 'package:talk_of_the_town/Screens/Consent%20And%20Onboarding/onboarding.dart';
 import 'package:talk_of_the_town/Screens/loading.dart';
 import 'package:talk_of_the_town/Utilities/auth_utils.dart';
 import 'package:talk_of_the_town/main.dart';

@@ -93,7 +93,7 @@ class _RequestPermissionsState extends State<RequestPermissions> {
                     width: 172,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.deepPurple,
+                      color: Colors.lightGreen,
                     ),
                     child: Icon(
                       Icons.mic,
@@ -144,7 +144,7 @@ class _RequestPermissionsState extends State<RequestPermissions> {
                     width: 172,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.deepPurple,
+                      color: Colors.lightGreen,
                     ),
                     child: const Icon(
                       Icons.location_on,
@@ -194,7 +194,7 @@ class _RequestPermissionsState extends State<RequestPermissions> {
                       width: 172,
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.deepPurple,
+                        color: Colors.lightGreen,
                       ),
                       child: const Icon(
                         Icons.location_on_outlined,
@@ -244,7 +244,7 @@ class _RequestPermissionsState extends State<RequestPermissions> {
                     width: 172,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.deepPurple,
+                      color: Colors.lightGreen,
                     ),
                     child: const Icon(
                       Icons.notifications_active_outlined,
@@ -293,7 +293,7 @@ class _RequestPermissionsState extends State<RequestPermissions> {
                     width: 172,
                     decoration: const BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.deepPurple,
+                      color: Colors.lightGreen,
                     ),
                     child: const Icon(
                       Icons.storage,
@@ -384,7 +384,7 @@ class _RequestPermissionsState extends State<RequestPermissions> {
             size: Size(4.0, 4.0),
             spacing: EdgeInsets.symmetric(horizontal: 2),
             activeSize: Size(20.0, 8.0),
-            activeColor: Colors.deepPurple,
+            activeColor: Colors.lightGreen,
             activeShape: RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(25.0)),
             ),

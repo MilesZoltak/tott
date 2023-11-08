@@ -55,8 +55,11 @@ class AuthUtils {
       print("sign in json response: $jsonResponse");
       if (response.statusCode == 200) {
         loginInfo = UserSessionInfo.fromJson(jsonResponse);
+      } else if (response.statusCode == 412) {
+        loginInfo = UserSessionInfo.fromJson(jsonResponse);
       } else {
-        print("status code isn't 200 tho...");
+        print("status code isn't 200 tho... [${response.statusCode}]");
+        // i think setting loginInfo is useless here because we are gonna throw an exception and we might not ever reach the return but idc
         loginInfo = UserSessionInfo.fromJson(jsonResponse);
 
         statusCode = response.statusCode;

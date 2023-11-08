@@ -17,7 +17,7 @@ class Loading extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const SizedBox(),
-                    const Expanded(child: SpinKitFadingCircle(color: Colors.deepPurple)),
+                    const Expanded(child: SpinKitFadingCircle(color: Colors.lightGreen)),
                     message != null ? Text(message!) : const SizedBox()
                   ],
                 )),

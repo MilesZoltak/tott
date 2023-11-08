@@ -6,11 +6,11 @@ import 'package:intl/intl.dart';
 import 'package:talk_of_the_town/Models/onboarding_response.dart';
 import 'package:talk_of_the_town/Models/participant.dart';
 import 'package:talk_of_the_town/Models/task_payload.dart';
-import 'package:talk_of_the_town/Screens/Informed%20Consent/consent.dart';
+import 'package:talk_of_the_town/Screens/Consent%20And%20Onboarding/consent.dart';
 import 'package:talk_of_the_town/Screens/home.dart';
 import 'package:talk_of_the_town/Screens/Auth/sign_in.dart';
 import 'package:talk_of_the_town/Screens/loading.dart';
-import 'package:talk_of_the_town/Screens/onboarding.dart';
+import 'package:talk_of_the_town/Screens/Consent%20And%20Onboarding/onboarding.dart';
 import 'package:talk_of_the_town/Utilities/auth_utils.dart';
 import 'package:talk_of_the_town/Utilities/client_manager.dart';
 import 'package:talk_of_the_town/Utilities/database_manager.dart';
@@ -46,7 +46,9 @@ class _WrapperState extends State<Wrapper> {
   }
 
   Future clientRequests() async {
+    print("running startup function");
     await StartupManager().runStartupFunction();
+    print("done running startup function");
   }
 
   Future<void> manageStartupActivities() async {

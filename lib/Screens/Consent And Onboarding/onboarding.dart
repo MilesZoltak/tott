@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:talk_of_the_town/Models/bridge_dart_sdk/bridge_sdk.models.swagger.dart';
 import 'package:talk_of_the_town/Models/onboarding_response.dart';
 import 'package:talk_of_the_town/Models/participant.dart';
@@ -12,6 +14,7 @@ import 'package:talk_of_the_town/Screens/home.dart';
 import 'package:talk_of_the_town/Screens/learn_more.dart';
 import 'package:talk_of_the_town/Screens/request_permissions.dart';
 import 'package:talk_of_the_town/Utilities/client_manager.dart';
+import 'package:talk_of_the_town/Utilities/database_manager.dart';
 import 'package:talk_of_the_town/Utilities/secure_storage_manager.dart';
 import 'package:talk_of_the_town/main.dart';
 
@@ -23,8 +26,10 @@ class ToTOnboarding extends StatefulWidget {
 }
 
 class ToTOnboardingState extends State<ToTOnboarding> {
-  String _encode(Object object) => const JsonEncoder.withIndent(' ').convert(object);
+  String _encode(Object object) =>
+      const JsonEncoder.withIndent(' ').convert(object);
   final introKey = GlobalKey<IntroductionScreenState>();
+  final DatabaseManager databaseManager = DatabaseManager();
   final SecureStorageManager secureStorageManager = SecureStorageManager();
 
   EdgeInsets titlePadding = const EdgeInsets.only(top: 32);
@@ -46,8 +51,6 @@ class ToTOnboardingState extends State<ToTOnboarding> {
   String? householdIncome;
   String? education;
   List<String> languages = [];
-
-  bool anonymized = false;
   double doneTextSize = 16;
 
   String getNumberAndSuffix(int num, {bool ignoreOne = true}) {
@@ -105,7 +108,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                 if (currentStep == 0 &&
                     (childrenData[i]["nickname"] ?? "") == "") {
                   showSnackBar(context, "Please enter a nickname.");
-                } else if (currentStep == 1 && childrenData[i]["dob"] == null) {
+                } else if (currentStep == 1 && childrenData[i]["DOB"] == null) {
                   showSnackBar(context, "Please select a date of birth.");
                 } else if (currentStep == 2 &&
                     childrenData[i]["gender"] == null) {
@@ -152,7 +155,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                               (childrenData[i]["nickname"] ?? "") == "") {
                             showSnackBar(context, "Please enter a nickname.");
                           } else if (currentStep == 1 &&
-                              childrenData[i]["dob"] == null) {
+                              childrenData[i]["DOB"] == null) {
                             showSnackBar(
                                 context, "Please select a date of birth.");
                           } else if (currentStep == 2 &&
@@ -228,14 +231,14 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                                     const Duration(days: 365 * 2 + 1)));
 
                             if (dob != null) {
-                              setState(() => childrenData[i]["dob"] = dob);
+                              setState(() => childrenData[i]["DOB"] = dob);
                             }
                           },
                           child: Text(
-                            childrenData[i]["dob"] == null
+                            childrenData[i]["DOB"] == null
                                 ? "Select Date"
                                 : DateFormat('MMM d yyy')
-                                    .format(childrenData[i]["dob"]),
+                                    .format(childrenData[i]["DOB"]),
                             style: const TextStyle(fontSize: 24),
                           ))
                     ],
@@ -261,8 +264,8 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                           },
                           fillColor: MaterialStateProperty.resolveWith<Color>(
                               (Set<MaterialState> states) {
-                            return numChildren == 6
-                                ? Colors.deepPurple
+                            return childrenData[i]["gender"] == "Male"
+                                ? Colors.lightGreen
                                 : Colors.grey;
                           })),
                       RadioListTile(
@@ -274,8 +277,8 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                           },
                           fillColor: MaterialStateProperty.resolveWith<Color>(
                               (Set<MaterialState> states) {
-                            return numChildren == 6
-                                ? Colors.deepPurple
+                            return childrenData[i]["gender"] == "Female"
+                                ? Colors.lightGreen
                                 : Colors.grey;
                           })),
                       RadioListTile(
@@ -288,8 +291,9 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                           },
                           fillColor: MaterialStateProperty.resolveWith<Color>(
                               (Set<MaterialState> states) {
-                            return numChildren == 6
-                                ? Colors.deepPurple
+                            return childrenData[i]["gender"] ==
+                                    "Nonbinary or intersex"
+                                ? Colors.lightGreen
                                 : Colors.grey;
                           })),
                       RadioListTile(
@@ -301,8 +305,8 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                           },
                           fillColor: MaterialStateProperty.resolveWith<Color>(
                               (Set<MaterialState> states) {
-                            return numChildren == 6
-                                ? Colors.deepPurple
+                            return childrenData[i]["gender"] == "Other"
+                                ? Colors.lightGreen
                                 : Colors.grey;
                           })),
                     ],
@@ -506,7 +510,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                          "What weekdays would you be willing to do short activities with this child?",
+                          "What weekend days would you be willing to do short activities with this child?",
                           style: stepContentTextStyle),
                       const Padding(
                         padding: EdgeInsets.only(top: 8.0),
@@ -662,7 +666,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
             int childIdx = idx - 2;
             bool noNickname =
                 (childrenData[childIdx]["nickname"] ?? "").isEmpty;
-            bool noDob = childrenData[childIdx]["dob"] == null;
+            bool noDob = childrenData[childIdx]["DOB"] == null;
             bool noWeekdays =
                 (childrenData[childIdx]["weekdayAvailability"] ?? []).isEmpty;
             bool noWeekdayTimes =
@@ -759,7 +763,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return numChildren == 6
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: 6,
@@ -782,7 +786,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return numChildren == 5
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: 5,
@@ -805,7 +809,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return numChildren == 4
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: 4,
@@ -828,7 +832,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return numChildren == 3
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: 3,
@@ -851,7 +855,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return numChildren == 2
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: 2,
@@ -874,7 +878,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return numChildren == 1
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: 1,
@@ -914,7 +918,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return householdIncome == "\$200,000+"
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: "\$200,000+",
@@ -930,7 +934,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return householdIncome == "\$150,000 - \$200,000"
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: "\$150,000 - \$200,000",
@@ -946,7 +950,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return householdIncome == "\$125,000 - \$150,000"
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: "\$125,000 - \$150,000",
@@ -962,7 +966,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return householdIncome == "\$100,000 - \$125,000"
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: "\$100,000 - \$125,000",
@@ -978,7 +982,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return householdIncome == "\$80,000 - \$100,000"
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: "\$80,000 - \$100,000",
@@ -994,7 +998,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return householdIncome == "\$60,000 - \$80,000"
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: "\$60,000 - \$80,000",
@@ -1010,7 +1014,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return householdIncome == "\$40,000 - \$60,000"
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: "\$40,000 - \$60,000",
@@ -1026,7 +1030,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return householdIncome == "Less than \$40,000"
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: "Less than \$40,000",
@@ -1056,7 +1060,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return education == "Doctorate"
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: "Doctorate",
@@ -1072,7 +1076,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return education == "Master's Degree"
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: "Master's Degree",
@@ -1088,7 +1092,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return education == "Bachelor's Degree"
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: "Bachelor's Degree",
@@ -1104,7 +1108,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return education == "Associate's Degree"
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: "Associate's Degree",
@@ -1120,7 +1124,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return education == "Some college"
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: "Some college",
@@ -1136,7 +1140,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return education == "High school or GED"
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: "High school or GED",
@@ -1152,7 +1156,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return education == "Did not finish high school"
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: "Did not finish high school",
@@ -1168,7 +1172,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                       fillColor: MaterialStateProperty.resolveWith<Color>(
                           (Set<MaterialState> states) {
                         return education == "Other"
-                            ? Colors.deepPurple
+                            ? Colors.lightGreen
                             : Colors.grey;
                       }),
                       value: "Other",
@@ -1292,7 +1296,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                         width: 100,
                         height: 100,
                         decoration: const BoxDecoration(
-                            color: Colors.deepPurple, shape: BoxShape.circle),
+                            color: Colors.lightGreen, shape: BoxShape.circle),
                         child: const Icon(
                           Icons.done,
                           size: 64,
@@ -1308,53 +1312,85 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                     OutlinedButton(
                       child:
                           const Text("Done!", style: TextStyle(fontSize: 24)),
-                      onPressed: () {
-                        print("there's no place like home");
+                      onPressed: () async {
                         // TODO: upload their onboarding information
-                        List<Participant> participants = [];
-                        childrenData.forEach((child) {
-                          print("child: $child");
-                          Participant p = Participant(
-                              "anon-Id",
-                              child["gender"],
-                              {
-                                "weekdays": child["weekdayAvailability"],
-                                "weekdayTimes": [
-                                  child["weekdayTimes"].contains("Morning"),
-                                  child["weekdayTimes"].contains("Afternoon"),
-                                  child["weekdayTimes"].contains("Evening")
-                                ],
-                                "weekend": child["weekendAvailability"],
-                                "weekendTimes": [
-                                  child["weekendTimes"].contains("Morning"),
-                                  child["weekendTimes"].contains("Afternoon"),
-                                  child["weekendTimes"].contains("Evening")
-                                ]
-                              },
-                              anonymized,
-                              nickname: anonymized ? null : child["nickname"],
-                              dob: child["dob"]
-                              // TODO: what the heck do we do with projectStatuses?
+                        // transform data into bridge types
+                        List<Participant> participantsForUpload = [];
+                        for (var child in childrenData) {
+                          Map<String, List> availability = {
+                            "weekdays": child["weekdayAvailability"],
+                            "weekdayTimes": [
+                              child["weekdayTimes"].contains("Morning"),
+                              child["weekdayTimes"].contains("Afternoon"),
+                              child["weekdayTimes"].contains("Evening")
+                            ],
+                            "weekends": child["weekendAvailability"],
+                            "weekendTimes": [
+                              child["weekendTimes"].contains("Morning"),
+                              child["weekendTimes"].contains("Afternoon"),
+                              child["weekendTimes"].contains("Evening")
+                            ]
+                          };
+
+                          var random = Random.secure();
+                          var values =
+                              List<int>.generate(6, (i) => random.nextInt(255));
+                          String anonId = base64UrlEncode(values);
+                          print("most recent nickname and id: ${child["nickname"]} and $anonId");
+                          Participant pLocal = Participant(
+                              anonId, child["gender"], availability, false,
+                              nickname: child["nickname"], dob: child["DOB"]
                               );
-                          participants.add(p);
-                          print(p);
-                        });
+                          Participant pServer = Participant(
+                              anonId, child["gender"], availability, true,
+                              dob: null);
+                          databaseManager.addParticipant(pLocal);
+                          participantsForUpload.add(pServer);
+                        }
+
+                        // create the onboarding response object
                         late OnboardingResponse onboardingResponse;
+                        DateTime onboardingEndDate = DateTime.now();
                         try {
-                          onboardingResponse = OnboardingResponse(participants, householdIncome!, education!, languages, DateTime.now());
+                          onboardingResponse = OnboardingResponse(
+                              participantsForUpload,
+                              householdIncome!,
+                              education!,
+                              languages,
+                              onboardingEndDate);
                         } catch (e) {
-                          showSnackBar(context, "Error: Please check your inputs and try again.");
+                          showSnackBar(context,
+                              "Error: Please check your inputs and try again.");
                           return;
                         }
 
+                        // store the onboarding response locally
+                        await databaseManager.storeOnboarding(onboardingResponse);
+                        print("stored onboarding");
+
+                        // store it on the server
                         ClientManager clientManager = ClientManager();
-                        ParticipantData onboardingResults = ParticipantData(identifier: 'onboarding', data: _encode(onboardingResponse.toMap()));
+                        ParticipantData onboardingResults = ParticipantData(
+                            identifier: 'onboarding',
+                            data: _encode(onboardingResponse.toMap()));
                         clientManager.uploadOnboardingData(onboardingResults);
+                        print("uploaded onboarding");
+
+                        // also do the associated activity event (whatever the heck that means)
+                        StudyActivityEvent completedOnboarding =
+                            StudyActivityEvent(
+                                eventId: 'completed_onboarding',
+                                timestamp: onboardingEndDate);
+                        clientManager.postActivityEvent(completedOnboarding);
+                        databaseManager
+                            .addStudyActivityEvent(completedOnboarding);
+
                         secureStorageManager.setOnboarded(true);
                         Navigator.pushAndRemoveUntil(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const RequestPermissions()),
+                                builder: (context) =>
+                                    const RequestPermissions()),
                             (route) => false);
                       },
                     )
@@ -1381,7 +1417,7 @@ class ToTOnboardingState extends State<ToTOnboarding> {
         size: Size(5.0, 5.0),
         spacing: EdgeInsets.symmetric(horizontal: 4),
         activeSize: Size(22.0, 10.0),
-        activeColor: Colors.deepPurple,
+        activeColor: Colors.lightGreen,
         activeShape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(25.0)),
         ),

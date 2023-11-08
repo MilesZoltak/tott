@@ -3,11 +3,12 @@ import 'dart:convert';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:talk_of_the_town/Screens/Auth/create_account.dart';
-import 'package:talk_of_the_town/Screens/Informed%20Consent/consent.dart';
+import 'package:talk_of_the_town/Screens/Consent%20And%20Onboarding/consent.dart';
 import 'package:talk_of_the_town/Screens/home.dart';
 import 'package:talk_of_the_town/Screens/loading.dart';
-import 'package:talk_of_the_town/Screens/onboarding.dart';
+import 'package:talk_of_the_town/Screens/Consent%20And%20Onboarding/onboarding.dart';
 import 'package:talk_of_the_town/Utilities/auth_utils.dart';
+import 'package:talk_of_the_town/Utilities/client_manager.dart';
 import 'package:talk_of_the_town/Utilities/secure_storage_manager.dart';
 import 'package:talk_of_the_town/Utilities/startup_manager.dart';
 import 'package:talk_of_the_town/Utilities/wrapper.dart';
@@ -142,7 +143,7 @@ class _SignInPageState extends State<SignInPage> {
                                 viewPassword
                                     ? Icons.visibility
                                     : Icons.visibility_off,
-                                color: viewPassword ? Colors.deepPurpleAccent : Colors.grey[600],
+                                color: viewPassword ? Colors.lightGreenAccent : Colors.grey[600],
                               ),
                             ),
                           ),
@@ -181,7 +182,9 @@ class _SignInPageState extends State<SignInPage> {
                             setState(() => error = "");
                             // if (!_formKey.currentState!.validate()) return;
                             // dynamic? response = await auth.signIn(email, password);
+                            secureStorageManager.dumpSecureStorage();
                             setState(() => loading = true);
+
 
                             ApiException? exception;
                             try {
@@ -213,9 +216,12 @@ class _SignInPageState extends State<SignInPage> {
                               secureStorageManager.setSessionToken(loginInfo!.sessionToken!);
 
                               //we may not have consented or onboarded yet: navigate appropriately
+                              print("login info: $loginInfo");
                               if (loginInfo!.consented ?? false) {
+                              // if (false && (loginInfo!.consented ?? false)) {
                                 bool onboarded =
                                     await secureStorageManager.getOnboarded();
+                                print("onboarded: $onboarded");
 
                                 if (onboarded) {
                                   await StartupManager().runStartupFunction();

@@ -122,6 +122,7 @@ class AudioTaskData {
   }
 
   Future<Map<String, dynamic>> uploadAudioTaskData() async {
+    print("here is the audioTaskData: ${toJson()}");
     bool succeeded = false;
     ClientManager clientManager = ClientManager();
 
@@ -136,12 +137,17 @@ class AudioTaskData {
 
     // STEP 1: Create directory to be zipped
     Map<String, dynamic> zipPrep = await clientManager.getToBeZipped(
-        "manualTask"); //TODO: figure out the actual session id
+        sessionInstanceGuid);
     Directory toBeZipped = zipPrep["toBeZipped"];
     String tempPath = zipPrep["tempPath"];
 
     // STEP 2: add files to zip folder
-    clientManager.addAudioToZip(toBeZipped, audioPath);
+    print("theres nothing i can do, the audio path is $recordingPath");
+    String audioFilename = clientManager.addAudioToZip(toBeZipped, recordingPath);
+    print("for the record audio, filename is $audioFilename");
+
+    // STEP 2.5 add metadata.json and info.json to zip folder
+    clientManager.addJsonFilesToZip(toBeZipped, audioFilename, taskGuid, sessionInstanceGuid, recordingPath, startDate, endDate, deviceTypeIdentifier, dataGroups, appVersion, deviceInfo, participantIds, participantAgeMonths, taskPayload!, extraData);
 
     // STEP 3: Zip the folder
     String? zipTarget = await clientManager.zipIt(toBeZipped, tempPath);
@@ -153,6 +159,9 @@ class AudioTaskData {
     int numBytes = encryptionResult["numBytes"];
     List<int> contentBytes = encryptionResult["contentBytes"];
     String contentMd5 = encryptionResult["md5Content"];
+    print("did we get this far?");
+    print(contentMd5);
+    print(contentBytes);
 
     // STEP 5: Request upload
     String filename = path.basename(zipTarget);
@@ -163,9 +172,6 @@ class AudioTaskData {
     String uploadUrl = requestResult!["uploadUrl"];
 
     // STEP 6: Do Upload
-    // await uploadContent(
-    //     uploadUrl, filename, numBytes, contentMd5, zipTarget);
-
     await clientManager.uploadContent(
         uploadUrl, filename, contentBytes, contentMd5, zipTarget);
 
@@ -176,17 +182,21 @@ class AudioTaskData {
     bool finished = false;
     // timer for checking whether it's timed out
     Stopwatch timeOuter = Stopwatch()..start();
+    print("upload id = $uploadId");
     while(finished == false){
       if (timeOuter.elapsed.inSeconds > 15){
+        print("ah fuck it");
         finished = true;
       }
+
       bool uploadValidated = await clientManager.validateUpload(uploadId);
-      if (uploadValidated){
+      if (uploadValidated == true){
         finished = true;
         succeeded = true;
         print("Upload validation confirmed");
       }
     }
+    print("we out");
     Map<String,dynamic> uploadOutcome = {'succeeded': succeeded, 'uploadId': uploadId};
     return uploadOutcome;
   }

@@ -3,7 +3,7 @@ import 'dart:math';
 
 class Participant {
   String anonId = "placeholder"; // an anonymized ID for uploads.
-  int ageInMonths = -1; // can be updated
+  int ageMonths = -1; // can be updated
   String gender = "placeholder";
   Map<String, List> validTimes = {}; // stored as {weekdays: [list], weekdayTimes: [0,0,0], weekends: [list], weekendTimes: [0,0,0]}
   bool anonymized = false;
@@ -15,44 +15,52 @@ class Participant {
 
   Participant(this.anonId, this.gender, this.validTimes, this.anonymized,
       {this.nickname, required this.dob, this.projectStatuses}) {
-    //set anonId
-    var random = Random.secure();
-    var values = List<int>.generate(6, (i) => random.nextInt(255));
-    anonId = base64UrlEncode(values);
-
-    //set ageInMonths
-    DateTime now = DateTime.now();
-    ageInMonths = (now.year - dob!.year) * 12 + now.month - dob!.month;
-    if (now.day < dob!.day) {
-      ageInMonths--;
+    //set anonId, only if there is no anonId
+    if (anonId == "placeholder") {
+      var random = Random.secure();
+      var values = List<int>.generate(6, (i) => random.nextInt(255));
+      anonId = base64UrlEncode(values);
     }
 
-    //anonymize dob if necessary
+    //set ageMonths
+    DateTime now = DateTime.now();
+    if (dob == null) {
+      ageMonths = 0;
+    } else {
+      ageMonths = (now.year - dob!.year) * 12 + now.month - dob!.month;
+      if (now.day < dob!.day) {
+        ageMonths--;
+      }
+    }
+
+    //anonymize dob if necessary, probably not necessary cuz if it's anonymized u should just pass null for dob
     if (anonymized) {
       dob = null;
     }
   }
 
+
   Participant.fromJson(Map<String, dynamic> json){
+    print(json);
     anonId = json['anonId'];
-    ageInMonths = json['ageMonths'];
+    ageMonths = json['ageMonths'];
     gender = json['gender'];
     validTimes = Map.from(jsonDecode(json['validTimes']));
     anonymized = (json['anonymized'] == 'true' || json['anonymized'] == true || json['anonymized'] == 1);
     nickname = json['nickname'] ?? null;
-    dob = json['dob'] == null ? null : DateTime.parse(json['dob']);
+    dob = json['DOB'] == null ? null : DateTime.parse(json['DOB']);
     projectStatuses = json['projectStatuses'] == null ? null : jsonDecode(json['projectStatuses']); // likewise, convert?
   }
 
   Map<String, dynamic> toMap() {
     return {
       'anonId': anonId,
-      'ageInMonths': ageInMonths,
+      'ageMonths': ageMonths,
       'gender': gender,
       'validTimes': jsonEncode(validTimes),
       'anonymized': anonymized,
       'nickname': nickname ?? null,
-      'dob': dob == null ? null :dob!.toIso8601String(),
+      'DOB': dob == null ? null :dob!.toIso8601String(),
       'projectStatuses': projectStatuses?.toString()
     };
   }
@@ -72,12 +80,12 @@ class Participant {
     int age = (currentDate.year - dob!.year - monthMod)*12 + monthCalc;
 
 
-    ageInMonths = age;
+    ageMonths = age;
   }
 
   @override
   String toString() {
-    return 'Participant(anonId: $anonId, ageInMonths: $ageInMonths, gender: $gender, '
+    return 'Participant(anonId: $anonId, ageMonths: $ageMonths, gender: $gender, '
         'validTimes: $validTimes, anonymized: $anonymized, nickname: $nickname, '
         'dob: $dob, projectStatuses: $projectStatuses)';
   }

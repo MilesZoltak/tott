@@ -3,7 +3,9 @@ import 'package:talk_of_the_town/Components/audio_recorder.dart';
 import 'package:talk_of_the_town/Debug/debug.dart';
 import 'package:talk_of_the_town/Models/task_payload.dart';
 import 'package:talk_of_the_town/Screens/Audio%20Recording%20Task/audio_recording_task.dart';
+import 'package:talk_of_the_town/Screens/View%20Completed%20Data/view_completed_data.dart';
 import 'package:talk_of_the_town/Screens/debug_info.dart';
+import 'package:talk_of_the_town/Screens/Edit%20Participant%20Info/select_participant_edit.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -34,11 +36,11 @@ class _HomeState extends State<Home> {
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      // color: Colors.deepPurple,
+                      // color: Colors.lightGreen,
                       borderRadius: BorderRadius.circular(20),
                       // Set the desired corner radius here
                       border: Border.all(
-                        color: Colors.deepPurple,
+                        color: Colors.lightGreen,
                         width: 4,
                       ),
                     ),
@@ -60,14 +62,16 @@ class _HomeState extends State<Home> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => SelectParticipantEdit()));
+                  },
                   child: Container(
                     decoration: BoxDecoration(
-                      // color: Colors.deepPurple,
+                      // color: Colors.lightGreen,
                       borderRadius: BorderRadius.circular(20),
                       // Set the desired corner radius here
                       border: Border.all(
-                        color: Colors.deepPurple,
+                        color: Colors.lightGreen,
                         width: 4,
                       ),
                     ),
@@ -110,11 +114,11 @@ class _HomeState extends State<Home> {
                   child: Container(
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      // color: Colors.deepPurple,
+                      // color: Colors.lightGreen,
                       borderRadius: BorderRadius.circular(20),
                       // Set the desired corner radius here
                       border: Border.all(
-                        color: Colors.deepPurple,
+                        color: Colors.lightGreen,
                         width: 4,
                       ),
                     ),
@@ -135,15 +139,17 @@ class _HomeState extends State<Home> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push((context), MaterialPageRoute(builder: (context) => const ViewCompletedData()));
+                  },
                   child: Container(
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      // color: Colors.deepPurple,
+                      // color: Colors.lightGreen,
                       borderRadius: BorderRadius.circular(20),
                       // Set the desired corner radius here
                       border: Border.all(
-                        color: Colors.deepPurple,
+                        color: Colors.lightGreen,
                         width: 4,
                       ),
                     ),
@@ -172,11 +178,11 @@ class _HomeState extends State<Home> {
                   child: Container(
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      // color: Colors.deepPurple,
+                      // color: Colors.lightGreen,
                       borderRadius: BorderRadius.circular(20),
                       // Set the desired corner radius here
                       border: Border.all(
-                        color: Colors.deepPurple,
+                        color: Colors.lightGreen,
                         width: 4,
                       ),
                     ),

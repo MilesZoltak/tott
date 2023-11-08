@@ -93,7 +93,7 @@ class TaskActivationManager {
     List<Participant> allParticipants = await databaseManager.getAllParticipants();
     List<Participant> participants = [];
     allParticipants.forEach((participant) {
-      if ((participant.ageInMonths >= minAge) && (participant.ageInMonths <= maxAge)) {
+      if ((participant.ageMonths >= minAge) && (participant.ageMonths <= maxAge)) {
         participants.add(participant);
       }
     });

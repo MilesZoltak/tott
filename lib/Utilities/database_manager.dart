@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:flutter_background_geolocation/flutter_background_geolocation.dart' as bg;
+import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
+    as bg;
 import 'package:sqflite/sqflite.dart';
 import 'dart:async';
 import 'dart:io';
@@ -34,7 +35,6 @@ const String onboardingTable = 'onboardingResponse';
 /// anything else that needs to be stored locally on the phone itself.
 /// {@category App}
 class DatabaseManager {
-
   static final _databaseName = 'tott_database.db';
   static final _databaseVersion = 1;
   static final _debugDeleteDb = false;
@@ -49,6 +49,7 @@ class DatabaseManager {
   // Here we ensure there is only one connection to the database.
   // this has to be a nullable in order to do the null-check for initialization.
   static Database? _database;
+
   Future<Database> get database async {
     // if database has not been initialized, initialize it. If it has, return as-is.
     if (_database == null) _database = await _initDatabase();
@@ -60,7 +61,7 @@ class DatabaseManager {
     Directory documentDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentDirectory.path, _databaseName);
     // debug: For testing databse setup or changing columns, this deletes the existing database first.
-    if (_debugDeleteDb){
+    if (_debugDeleteDb) {
       await deleteDatabase(path);
       print("database deleted");
     }
@@ -68,8 +69,7 @@ class DatabaseManager {
     // The action: open the database, or create it if it does not exist.
     // note oncreate callback, for dealing with its first incarnation.
     return await openDatabase(path,
-      version: _databaseVersion,
-      onCreate: _onCreate);
+        version: _databaseVersion, onCreate: _onCreate);
   }
 
   // the onCreate callback method, which generates the tables the first time the database is made.
@@ -79,7 +79,6 @@ class DatabaseManager {
     //the key bit of magic from sqflite is the "db.execute" command.
     // but even better, there's batch, for carrying out multiple commands.
     Batch creation = db.batch();
-
 
     // For the geofence table.
     // this actually just stores everything needed to make a geofence object
@@ -184,7 +183,7 @@ class DatabaseManager {
     )''');
 
     // Table that just has a list of all the StudyActivityEvents that have triggered.
-   creation.execute( '''
+    creation.execute('''
       CREATE TABLE $activityEventTable (
       _id INTEGER PRIMARY KEY,
       eventId TEXT NOT NULL,
@@ -234,7 +233,6 @@ class DatabaseManager {
       timestamp TEXT NOT NULL
     )''');
 
-
     // with all the commands queued up, let it rip!
     List outcome = await creation.commit();
     // note: Might need to revert to separate calls due to particular circumstances of onCreate, if we ever want to update what tables are in the app
@@ -250,13 +248,15 @@ class DatabaseManager {
       String encodedPayload = jsonEncode(tempPayload.toMap());
       forUpload['taskPayload'] = encodedPayload;
     }
-    forUpload['participantAgeMonths'] = jsonEncode(forUpload['participantAgeMonths']);
+    forUpload['participantAgeMonths'] =
+        jsonEncode(forUpload['participantAgeMonths']);
     forUpload['participantIds'] = jsonEncode(forUpload['participantIds']);
 
     print("xyz forupload length: ${forUpload.toString().length}");
     print("xyz forupload: ${forUpload.toString()}");
     for (int i = 0; i < forUpload.toString().length; i += 100) {
-      print("xyz forupload: ${forUpload.toString().substring(i, min(i + 100, forUpload.toString().length))}");
+      print(
+          "xyz forupload: ${forUpload.toString().substring(i, min(i + 100, forUpload.toString().length))}");
     }
     int id = await db.insert(dataForUploadTable, forUpload);
     return id;
@@ -264,8 +264,8 @@ class DatabaseManager {
 
   Future<List<AudioTaskData>> getCompletedData() async {
     Database db = await database;
-    List<Map<String, dynamic>> dataAwaitingUpload = await db.query(dataForUploadTable,
-      distinct: true);
+    List<Map<String, dynamic>> dataAwaitingUpload =
+        await db.query(dataForUploadTable, distinct: true);
     List<AudioTaskData> parsedData = [];
     dataAwaitingUpload.forEach((element) {
       // this slightly odd creation brought to you by weird object encoding.
@@ -274,17 +274,19 @@ class DatabaseManager {
     });
     return parsedData;
   }
-  
+
   Future<int> deleteCompletedData(String sessionInstanceGuid) async {
     // Something that will ONLY be called when stuff is fully uploaded and the
     // upload has been verified.
     Database db = await database;
-    int deletedCount = await db.delete(dataForUploadTable, where: 'sessionInstanceGuid = ?', whereArgs: [sessionInstanceGuid]);
+    int deletedCount = await db.delete(dataForUploadTable,
+        where: 'sessionInstanceGuid = ?', whereArgs: [sessionInstanceGuid]);
     return deletedCount;
   }
 
   /// Adds a geofence to the table of geofences. The actual activation of the geofence happens in activateGeofence.
-  Future<int> addGeofence(bg.Geofence geofence, bool active, {String activation = ''}) async {
+  Future<int> addGeofence(bg.Geofence geofence, bool active,
+      {String activation = ''}) async {
     Database db = await database;
     // The geofence object helps us out a lot here.
     Map<String, dynamic> fullEntry = geofence.toMap();
@@ -300,33 +302,40 @@ class DatabaseManager {
   }
 
   /// Retrieves and activates a geofence, that is, adds the geofence to the backgroundgeolocation system and updates the table accordingly.
-  Future<int> activateGeofence(String identifier, {TaskPayload? payload}) async {
+  Future<int> activateGeofence(String identifier,
+      {TaskPayload? payload}) async {
     int rowsUpdated = 0;
     Database db = await database;
-    var geofenceEntry = await db.query(geofenceTable, where: 'identifier = ?', whereArgs: [identifier]);
+    var geofenceEntry = await db
+        .query(geofenceTable, where: 'identifier = ?', whereArgs: [identifier]);
     Map<String, dynamic> targetGeofence = geofenceEntry[0];
     // now that we have the geofence, we need to turn it into an actual geofence.
     // The retrieved arguments should be largely intact, except extras.
     // Extras is the part of the geofence object that stores a reference to the TaskPayload,
     // but also directly stores info about a participant's availability, and notification text.
     bg.BackgroundGeolocation.addGeofence(bg.Geofence(
-      identifier: targetGeofence['identifier'],
-      radius: targetGeofence['radius'],
-      latitude: targetGeofence['latitude'],
-      longitude: targetGeofence['longitude'],
-      notifyOnEntry: targetGeofence['notifyOnEntry']=='true',
-      notifyOnDwell: targetGeofence['notifyOnDwell']=='true',
-      notifyOnExit: targetGeofence['notifyOnExit']=='true',
-      loiteringDelay: targetGeofence['loiteringDelay'].toInt(),
-      extras: payload == null ? jsonDecode(targetGeofence['extras']) : payload.toGeofencePayload()
-    )).then((bool success) async {
-      print("Geofence $identifier activated successfully, updating database"); // debug
+            identifier: targetGeofence['identifier'],
+            radius: targetGeofence['radius'],
+            latitude: targetGeofence['latitude'],
+            longitude: targetGeofence['longitude'],
+            notifyOnEntry: targetGeofence['notifyOnEntry'] == 'true',
+            notifyOnDwell: targetGeofence['notifyOnDwell'] == 'true',
+            notifyOnExit: targetGeofence['notifyOnExit'] == 'true',
+            loiteringDelay: targetGeofence['loiteringDelay'].toInt(),
+            extras: payload == null
+                ? jsonDecode(targetGeofence['extras'])
+                : payload.toGeofencePayload()))
+        .then((bool success) async {
+      print(
+          "Geofence $identifier activated successfully, updating database"); // debug
       // a copy that is more easily modifiable than the one originally extracted
-      Map<String, Object?> copyGeofence = Map<String, Object?>.from(targetGeofence);
+      Map<String, Object?> copyGeofence =
+          Map<String, Object?>.from(targetGeofence);
       copyGeofence['active'] = true.toString();
       //targetGeofence['active'] = 'true';
       String serialID = targetGeofence['_id'].toString();
-      rowsUpdated = await db.update(geofenceTable, copyGeofence, where: '_id = $serialID');
+      rowsUpdated = await db.update(geofenceTable, copyGeofence,
+          where: '_id = $serialID');
     }).catchError((error) {
       print("Geofence activation unsuccessful: $error");
     });
@@ -337,15 +346,18 @@ class DatabaseManager {
   Future<int> deactivateGeofence(String identifier) async {
     int rowsUpdated = 0;
     Database db = await database;
-    bg.BackgroundGeolocation.removeGeofence(identifier).then((bool success) async{
+    bg.BackgroundGeolocation.removeGeofence(identifier)
+        .then((bool success) async {
       print("Geofence $identifier deactiavted, updating database"); // debug
-      var geofenceEntry = await db.query(geofenceTable, where: 'identifier = ?', whereArgs: [identifier]);
+      var geofenceEntry = await db.query(geofenceTable,
+          where: 'identifier = ?', whereArgs: [identifier]);
       Map<String, dynamic> currentGeofence = geofenceEntry.first;
       Map<String, dynamic> copyGeofence = currentGeofence;
       copyGeofence['active'] = false.toString();
       String serialID = currentGeofence['_id'].toString();
-      rowsUpdated = await db.update(geofenceTable, copyGeofence, where: '_id = $serialID');
-    }).catchError((error){
+      rowsUpdated = await db.update(geofenceTable, copyGeofence,
+          where: '_id = $serialID');
+    }).catchError((error) {
       print("Geofence deactivation failed: $error");
     });
 
@@ -355,8 +367,9 @@ class DatabaseManager {
   /// Retrieve a specific geofence from the database.
   Future<Map<String, dynamic>?> getGeoFence(String identifier) async {
     Database db = await database;
-    List<Map<String, dynamic>> geofences = await db.query(geofenceTable, where:'identifier = ?', whereArgs: [identifier]);
-    if (geofences.length > 0){
+    List<Map<String, dynamic>> geofences = await db
+        .query(geofenceTable, where: 'identifier = ?', whereArgs: [identifier]);
+    if (geofences.length > 0) {
       return geofences.first;
     } else {
       return null;
@@ -371,7 +384,8 @@ class DatabaseManager {
   }
 
   /// Adds an upload ID to the database for tracking ongoing upload sessions.
-  Future<int> addUploadId(String uploadId, String url, String name, String length, String md5) async {
+  Future<int> addUploadId(String uploadId, String url, String name,
+      String length, String md5) async {
     Database db = await database;
     Map<String, dynamic> newIds = {
       'uploadId': uploadId,
@@ -393,12 +407,13 @@ class DatabaseManager {
   /// Removes an upload session from the internal database
   Future<int> deleteUploadId(String uploadId) async {
     Database db = await database;
-    int deletedCount = await db.delete(uploadIdTable, where: 'uploadId = ?', whereArgs: [uploadId]);
+    int deletedCount = await db
+        .delete(uploadIdTable, where: 'uploadId = ?', whereArgs: [uploadId]);
     return deletedCount;
   }
 
   /// A debug function that wipes all stored upload sessions
-  Future<int> deleteAllUploadIds() async{
+  Future<int> deleteAllUploadIds() async {
     Database db = await database;
     int deletedCount = await db.delete(uploadIdTable);
     return deletedCount;
@@ -409,7 +424,8 @@ class DatabaseManager {
     Database db = await database;
     List unparsed = await db.query(participantTable);
     // parse the list as Participants
-    List<Participant> parsed = unparsed.map((item) => Participant.fromJson(item)).toList();
+    List<Participant> parsed =
+        unparsed.map((item) => Participant.fromJson(item)).toList();
     return parsed;
   }
 
@@ -417,10 +433,12 @@ class DatabaseManager {
   ///
   /// Most queries should use to be anonId or nickname, but can also be used to
   /// find all participants of a specific age from the database if needed.
-  Future<Participant?> getParticipant(String queryField, String queryText) async {
+  Future<Participant?> getParticipant(
+      String queryField, String queryText) async {
     Database db = await database;
-    List foundParticipants = await db.query(participantTable, where: '$queryField = ?', whereArgs: [queryText]);
-    if (foundParticipants.length == 0){
+    List foundParticipants = await db.query(participantTable,
+        where: '$queryField = ?', whereArgs: [queryText]);
+    if (foundParticipants.length == 0) {
       return null;
     } else {
       // Parse the Map back into a Participant object
@@ -430,7 +448,6 @@ class DatabaseManager {
 
   /// add a participant, only used on initial onboarding.
   Future<int> addParticipant(Participant participant) async {
-
     Database db = await database;
 
     Map<String, dynamic> newParticipant = participant.toMap();
@@ -445,24 +462,26 @@ class DatabaseManager {
     Database db = await database;
 
     Map<String, dynamic> updatingParticipant = participant.toMap();
-    updatingParticipant['anonymized'] = updatingParticipant['anonymized'].toString();
+    updatingParticipant['anonymized'] =
+        updatingParticipant['anonymized'].toString();
     // first check if this is valid, i.e. if there is a record with that anonId. Otherwise insert.
-    Participant? existingRecord = await getParticipant('anonId', participant.anonId);
-    if (existingRecord == null){
+    Participant? existingRecord =
+        await getParticipant('anonId', participant.anonId);
+
+    if (existingRecord == null) {
       return await addParticipant(participant);
     } else {
-      return await db.update(
-          participantTable, updatingParticipant, where: 'anonId = ?',
-          whereArgs: [participant.anonId]);
+      return await db.update(participantTable, updatingParticipant,
+          where: 'anonId = ?', whereArgs: [participant.anonId]);
     }
   }
 
   // Functions for onboarding storage and updating
 
-  Future<OnboardingResponse?> getOnboarding() async{
+  Future<OnboardingResponse?> getOnboarding() async {
     Database db = await database;
     List<Map<String, dynamic>> onboardings = await db.query(onboardingTable);
-    if (onboardings.length > 0) {
+    if (onboardings.isNotEmpty) {
       return OnboardingResponse.fromJson(onboardings.first);
     } else {
       return null;
@@ -472,57 +491,61 @@ class DatabaseManager {
   /// Store an onboarding response.
   ///
   /// Add or update, there is always only one.
-  Future<int> storeOnboarding(OnboardingResponse response) async{
+  Future<int> storeOnboarding(OnboardingResponse response) async {
     Database db = await database;
 
     Map<String, dynamic> json = response.toMap();
-
     OnboardingResponse? checkOnboarding = await getOnboarding();
-    if (checkOnboarding == null){
+    if (checkOnboarding == null) {
       // add rather than overwrite. Really should only happen once.
-      return await db.insert(onboardingTable, json); // TODO: THis format is apparently not working w/the internal DB
+      return await db.insert(onboardingTable,
+          json); // TODO: THis format is apparently not working w/the internal DB
     } else {
       // update in this case just overwrites the first one.
       return await db.update(onboardingTable, json);
     }
-
   }
 
   // Functions for studies and timelines.
 
   /// Get all studies stored in the internal database
-  Future<List> getAllStudies() async{
+  Future<List> getAllStudies() async {
     Database db = await database;
     List<Map> studies = await db.query(studyTable);
     return studies;
   }
 
   /// Adds a study, including date last retrieved.
-  Future<int> addStudy(Map<String, Object> studyInfo) async{
+  Future<int> addStudy(Map<String, Object> studyInfo) async {
     Database db = await database;
     return await db.insert(studyTable, studyInfo);
   }
 
   /// Get a specific study by identifier
-  Future<Map<String, Object>> getStudy(String identifier) async {
+  Future<Map<String, Object?>> getStudy(String identifier) async {
     Database db = await database;
-    List studies = await db.query(studyTable, where: 'identifier = ?', whereArgs: [identifier]);
-    // TODO: this seems to be throwing errors because it returns a QueryRow, not a Map<String, Object>
-    return studies.first;
+    List<Map<String, Object?>> studies = await db
+        .query(studyTable, where: 'identifier = ?', whereArgs: [identifier]);
+    print("studies[0]");
+    print(studies[0].runtimeType);
+
+    return studies.isNotEmpty ? studies[0] : {};
   }
 
   /// Updates the timestamp, and just the timestamp, for the timeline of a specified study
-  Future<int> updateTimelineDatestamp(String identifier, DateTime newTime) async {
+  Future<int> updateTimelineDatestamp(
+      String identifier, DateTime newTime) async {
     Database db = await database;
     // first retrieve the existing record.
-    Map<String, Object> existingStudy = await getStudy(identifier);
+    Map<String, Object?> existingStudy = await getStudy(identifier);
     // the map returned by getStudy is a non-editable object, so we clone it.
     Map<String, Object> updatedStudy = Map.from(existingStudy);
 
     // simply replace the timestamp in this map, and send it back.
     updatedStudy['timelineUpdated'] = newTime.toIso8601String();
 
-    return await db.update(studyTable, updatedStudy, where: 'identifier = ?', whereArgs: [identifier]);
+    return await db.update(studyTable, updatedStudy,
+        where: 'identifier = ?', whereArgs: [identifier]);
   }
 
   /// Retrieves all app configs.
@@ -537,23 +560,24 @@ class DatabaseManager {
     // given an id, get the relevant app config entry.
     Database db = await database;
     List appConfigs = [];
-    if (id != null){
-      appConfigs = await db.query(appConfigTable, where:'_id = ', whereArgs: ['$id']);
+    if (id != null) {
+      appConfigs =
+          await db.query(appConfigTable, where: '_id = ', whereArgs: ['$id']);
       return appConfigs.first;
     } else {
       // if we weren't given an ID, just get the most recent one.
       appConfigs = await db.query(appConfigTable);
       return appConfigs.last;
     }
-
   }
 
   /// Add the newest AppConfig to the database.
-  Future<int> addAppConfig(AppConfig appConfig) async{
+  Future<int> addAppConfig(AppConfig appConfig) async {
     print("app config");
     print(appConfig.toJson());
     Database db = await database;
-    String createdOn = appConfig.createdOn!.toIso8601String(); // todo: Watch null-safety on these.
+    String createdOn = appConfig.createdOn!
+        .toIso8601String(); // todo: Watch null-safety on these.
     String modifiedOn = appConfig.modifiedOn!.toIso8601String();
 
     Map<String, dynamic> configFieldsToStore = {
@@ -568,7 +592,7 @@ class DatabaseManager {
   }
 
   /// Get list of all ScheduledSessions.
-  Future<List<ScheduledSession>> getAllScheduledSessions() async{
+  Future<List<ScheduledSession>> getAllScheduledSessions() async {
     Database db = await database;
     List<Map> allSessionsRaw = await db.query(scheduledSessionTable);
     // convert to session objects.
@@ -576,26 +600,25 @@ class DatabaseManager {
     allSessionsRaw.forEach((element) {
       // the format of these things is a map we can convert into a scheduled session object.
       // the catch is the assessmentlist, which are maps unto themselves.
-      List<Map> assessmentsRaw = List<Map>.from(jsonDecode(element['assessments']));
+      List<Map> assessmentsRaw =
+          List<Map>.from(jsonDecode(element['assessments']));
       List<ScheduledAssessment> assessments = [];
       assessmentsRaw.forEach((item) {
         ScheduledAssessment tempAssessment = ScheduledAssessment(
-          refKey: item['refKey'],
-          instanceGuid: item['instanceGuid'] ?? null,
-          type: 'ScheduledAssessment'
-        );
+            refKey: item['refKey'],
+            instanceGuid: item['instanceGuid'] ?? null,
+            type: 'ScheduledAssessment');
         assessments.add(tempAssessment);
       });
       ScheduledSession tempSession = ScheduledSession(
-        refGuid: element['refGuid'],
-        instanceGuid: element['instanceGuid'],
-        startEventId: element['startEventId'] ?? null,
-        startDay: element['startDay'] ?? 0,
-        endDay: element['endDay'] ?? null,
-        startTime: element['startTime'] ?? null,
-        delayTime: element['endTime'] ?? null,
-        assessments: assessments
-      );
+          refGuid: element['refGuid'],
+          instanceGuid: element['instanceGuid'],
+          startEventId: element['startEventId'] ?? null,
+          startDay: element['startDay'] ?? 0,
+          endDay: element['endDay'] ?? null,
+          startTime: element['startTime'] ?? null,
+          delayTime: element['endTime'] ?? null,
+          assessments: assessments);
       allSessions.add(tempSession);
     });
     return allSessions;
@@ -604,38 +627,40 @@ class DatabaseManager {
   /// Gets a specific scheduled session by one of two criteria
   ///
   /// used for pulling info about the next session when an event is triggered, mostly
-  Future<ScheduledSession?> getSpecificScheduledSession({String? startEventId, String? instanceGuid}) async {
+  Future<ScheduledSession?> getSpecificScheduledSession(
+      {String? startEventId, String? instanceGuid}) async {
     Database db = await database;
     // build the proper query string and arguments
     String whereString = '';
     List<String> whereArgs = [];
-    if (startEventId != null){
+    if (startEventId != null) {
       whereString = whereString + 'startEventId = ?';
       whereArgs.add(startEventId);
     }
     if (instanceGuid != null) {
-      if (whereString.length > 0){
+      if (whereString.length > 0) {
         whereString = whereString + ' AND ';
       }
       whereString = whereString + 'instanceGuid = ?';
       whereArgs.add(instanceGuid);
     }
-    List<Map> specificSessions = await db.query(scheduledSessionTable, where: whereString, whereArgs: whereArgs);
+    List<Map> specificSessions = await db.query(scheduledSessionTable,
+        where: whereString, whereArgs: whereArgs);
     // fail to find
-    if (specificSessions.length == 0){
+    if (specificSessions.length == 0) {
       return null;
     }
 
     // pull last item from list and process into a scheduled session.
     Map lastSessionRaw = specificSessions.last;
     List<ScheduledAssessment> schedAssessments = [];
-    List<Map> rawAssessments = List<Map>.from(jsonDecode(lastSessionRaw['assessments']));
+    List<Map> rawAssessments =
+        List<Map>.from(jsonDecode(lastSessionRaw['assessments']));
     rawAssessments.forEach((item) {
       ScheduledAssessment tempAssessment = ScheduledAssessment(
           refKey: item['refKey'],
           instanceGuid: item['instanceGuid'] ?? null,
-          type: 'ScheduledAssessment'
-      );
+          type: 'ScheduledAssessment');
       schedAssessments.add(tempAssessment);
     });
     return ScheduledSession(
@@ -646,12 +671,11 @@ class DatabaseManager {
         endDay: lastSessionRaw['endDay'] ?? null,
         startTime: lastSessionRaw['startTime'] ?? null,
         delayTime: lastSessionRaw['endTime'] ?? null,
-        assessments: schedAssessments
-    );
+        assessments: schedAssessments);
   }
 
   /// Adds a scheduled session to the database.
-  Future<int> addScheduledSession(ScheduledSession scheduledSession) async{
+  Future<int> addScheduledSession(ScheduledSession scheduledSession) async {
     Database db = await database;
     Map<String, Object?> parsedSession = scheduledSession.toJson();
     // potential issues with the assessments, need to encode them prior to saving.
@@ -666,13 +690,15 @@ class DatabaseManager {
       'delayTime': parsedSession['endTime'] ?? null,
       'assessments': jsonEncode(parsedSession['assessments'])
     };
-    return await db.insert(scheduledSessionTable, databaseFields, conflictAlgorithm: ConflictAlgorithm.ignore);
+    return await db.insert(scheduledSessionTable, databaseFields,
+        conflictAlgorithm: ConflictAlgorithm.ignore);
   }
 
   /// Deletes a specific session. Should be used very rarely, but just in case.
-  Future<int> deleteScheduledSession (String instanceGuid) async{
+  Future<int> deleteScheduledSession(String instanceGuid) async {
     Database db = await database;
-    return await db.delete(scheduledSessionTable, where: 'instanceGuid = ?', whereArgs: [instanceGuid]);
+    return await db.delete(scheduledSessionTable,
+        where: 'instanceGuid = ?', whereArgs: [instanceGuid]);
   }
 
   /// Gets EVERY stored TaskPayload in the database
@@ -683,48 +709,52 @@ class DatabaseManager {
     allTasksRaw.forEach((element) {
       // geofences is a complex field
       List geofences = jsonDecode(element['geofences']);
-      Map<String, dynamic> tempMap = element.cast<String,dynamic>();
+      Map<String, dynamic> tempMap = element.cast<String, dynamic>();
       tempMap['geofences'] = geofences;
       TaskPayload tempPayload = TaskPayload.fromJson(tempMap);
       allTasks.add(tempPayload);
     });
     return allTasks;
   }
-  
+
   /// Gets all the payloads associated with a specific assessment type (may have multiple instances)
   Future<List<TaskPayload>> getTaskPayloadOfType(String id) async {
     // this is essentially a clone of the get all function with a modified query
     Database db = await database;
     List<TaskPayload> allTasks = [];
-    List<Map> allTasksRaw = await db.query(audioTaskTable, where: 'guid = ?', whereArgs: [id]);
+    List<Map> allTasksRaw =
+        await db.query(audioTaskTable, where: 'guid = ?', whereArgs: [id]);
     allTasksRaw.forEach((element) {
       // geofences is a complex field
       List geofences = jsonDecode(element['geofences']);
-      Map<String, dynamic> tempMap = element.cast<String,dynamic>();
+      Map<String, dynamic> tempMap = element.cast<String, dynamic>();
       tempMap['geofences'] = geofences;
       TaskPayload tempPayload = TaskPayload.fromJson(tempMap);
       allTasks.add(tempPayload);
     });
     return allTasks;
   }
-  
+
   /// Gets a specific TaskPayload object.
   Future<TaskPayload?> getTaskPayloadInstance(String instanceId) async {
     Database db = await database;
-    List<Map> allTasksRaw = await db.query(audioTaskTable, where: 'instanceId = ?', whereArgs: [instanceId]);
-    if (allTasksRaw.length == 0){
+    List<Map> allTasksRaw = await db.query(audioTaskTable,
+        where: 'instanceId = ?', whereArgs: [instanceId]);
+    if (allTasksRaw.length == 0) {
       return null;
     }
     Map<String, dynamic> tempMap = Map<String, dynamic>.from(allTasksRaw.last);
-    List<String> geofences = List<String>.from(jsonDecode(allTasksRaw.last['geofences']));
+    List<String> geofences =
+        List<String>.from(jsonDecode(allTasksRaw.last['geofences']));
     tempMap['geofences'] = geofences;
     tempMap['endTaskQ'] = tempMap['endTaskQ'] == "true";
     // there are two optional pieces of content that might need decoding: participants and endtaskqcontent
-    if(tempMap['endTaskQ']){
+    if (tempMap['endTaskQ']) {
       tempMap['endTaskQContent'] = jsonDecode(tempMap['endTaskQContent']);
     }
-    if (tempMap.containsKey('participants')){
-      List<Map> encodedParticipants = List<Map>.from(jsonDecode(tempMap['participants']));
+    if (tempMap.containsKey('participants')) {
+      List<Map> encodedParticipants =
+          List<Map>.from(jsonDecode(tempMap['participants']));
       tempMap['participants'] = encodedParticipants;
     }
     return TaskPayload.fromJson(tempMap);
@@ -737,10 +767,10 @@ class DatabaseManager {
     Map<String, Object?> payloadMap = payload.toMap();
     payloadMap['geofences'] = jsonEncode(payloadMap['geofences']);
     payloadMap['endTaskQ'] = payloadMap['endTaskQ'].toString();
-    if(payload.endTaskQContent != null) {
+    if (payload.endTaskQContent != null) {
       payloadMap['endTaskQContent'] = jsonEncode(payloadMap['endTaskQContent']);
     }
-    if(payload.participants != null){
+    if (payload.participants != null) {
       List<Map> particMaps = [];
       payload.participants?.forEach((element) {
         particMaps.add(element.toMap());
@@ -749,7 +779,7 @@ class DatabaseManager {
     }
     return await db.insert(audioTaskTable, payloadMap);
   }
-  
+
   /// Updates a specific payload in the database, primarily useful for status updates.
   Future<int> updateTaskPayload(TaskPayload payload) async {
     Database db = await database;
@@ -757,17 +787,18 @@ class DatabaseManager {
     Map<String, Object?> payloadMap = payload.toMap();
     payloadMap['geofences'] = jsonEncode(payloadMap['geofences']);
     payloadMap['endTaskQ'] = payloadMap['endTaskQ'].toString();
-    if(payload.endTaskQContent != null) {
+    if (payload.endTaskQContent != null) {
       payloadMap['endTaskQContent'] = jsonEncode(payloadMap['endTaskQContent']);
     }
-    if(payload.participants != null){
+    if (payload.participants != null) {
       List<Map> particMaps = [];
       payload.participants?.forEach((element) {
         particMaps.add(element.toMap());
       });
       payloadMap['participants'] = jsonEncode(particMaps);
     }
-    return await db.update(audioTaskTable, payloadMap, where: 'instanceId = ?', whereArgs: [payload.instanceId]);
+    return await db.update(audioTaskTable, payloadMap,
+        where: 'instanceId = ?', whereArgs: [payload.instanceId]);
   }
 
   /// Retrieves a list of ALL StudyActivityEvents in the database.
@@ -777,7 +808,9 @@ class DatabaseManager {
     List<Map> allStudyActivityEventsRaw = await db.query(activityEventTable);
     List<StudyActivityEvent> studyActivityEvents = [];
     allStudyActivityEventsRaw.forEach((element) {
-      StudyActivityEvent tempEvent = StudyActivityEvent(eventId: element['eventId'], timestamp: DateTime.parse(element['timestamp']));
+      StudyActivityEvent tempEvent = StudyActivityEvent(
+          eventId: element['eventId'],
+          timestamp: DateTime.parse(element['timestamp']));
       studyActivityEvents.add(tempEvent);
     });
     return studyActivityEvents;
@@ -786,29 +819,37 @@ class DatabaseManager {
   /// A function that specifically grabs StudyActivityEvents that have not been sent to the server
   Future<List<StudyActivityEvent>> getUnuploadedStudyActivityEvents() async {
     Database db = await database;
-    List<Map> rawStudyActivityEvents = await db.query(activityEventTable, where: 'uploaded = ?', whereArgs: ["false"]);
+    List<Map> rawStudyActivityEvents = await db
+        .query(activityEventTable, where: 'uploaded = ?', whereArgs: ["false"]);
     List<StudyActivityEvent> toUpload = [];
     rawStudyActivityEvents.forEach((element) {
-      StudyActivityEvent tempEvent = StudyActivityEvent(eventId: element['eventId'], timestamp: DateTime.parse(element['timestamp']));
+      StudyActivityEvent tempEvent = StudyActivityEvent(
+          eventId: element['eventId'],
+          timestamp: DateTime.parse(element['timestamp']));
       toUpload.add(tempEvent);
     });
     return toUpload;
   }
 
   /// Gets all instances of a particular StudyActivityEvent
-  Future<List<StudyActivityEvent>> getLastStudyActivityEvent(String eventId) async {
+  Future<List<StudyActivityEvent>> getLastStudyActivityEvent(
+      String eventId) async {
     Database db = await database;
-    List<Map> allStudyActivityEventsRaw = await db.query(activityEventTable, where: 'eventId = ?', whereArgs: [eventId]);
+    List<Map> allStudyActivityEventsRaw = await db
+        .query(activityEventTable, where: 'eventId = ?', whereArgs: [eventId]);
     List<StudyActivityEvent> allEventsOfType = [];
     allStudyActivityEventsRaw.forEach((element) {
-      StudyActivityEvent tempEvent = StudyActivityEvent(eventId: element['eventId'], timestamp: DateTime.parse(element['timestamp']));
+      StudyActivityEvent tempEvent = StudyActivityEvent(
+          eventId: element['eventId'],
+          timestamp: DateTime.parse(element['timestamp']));
       allEventsOfType.add(tempEvent);
     });
     return allEventsOfType;
   }
-  
+
   /// Adds a new StudyActivityEvent entry
-  Future<int> addStudyActivityEvent(StudyActivityEvent event, {bool? uploaded = true}) async {
+  Future<int> addStudyActivityEvent(StudyActivityEvent event,
+      {bool? uploaded = true}) async {
     Database db = await database;
     Map<String, Object?> justFields = {
       'eventId': event.eventId,
@@ -819,33 +860,39 @@ class DatabaseManager {
     return await db.insert(activityEventTable, justFields);
   }
 
-  
   /// Deletes a StudyActivityEvent from the table by matching BOTH timestamp AND id.
   Future<int> deleteStudyActivityEvent(StudyActivityEvent event) async {
     Database db = await database;
-    return await db.delete(activityEventTable, where:'eventId = ? AND timestamp = ?', whereArgs: [event.eventId, event.timestamp!.toIso8601String()]);
+    return await db.delete(activityEventTable,
+        where: 'eventId = ? AND timestamp = ?',
+        whereArgs: [event.eventId, event.timestamp!.toIso8601String()]);
   }
 
   /// Updates a StudyActivityEvent by eventId
-  Future<int> updateStudyActivityEvent(StudyActivityEvent event, {bool? uploaded = true}) async {
+  Future<int> updateStudyActivityEvent(StudyActivityEvent event,
+      {bool? uploaded = true}) async {
     Database db = await database;
     Map<String, Object?> justFields = {
       'eventId': event.eventId,
       'timestamp': event.timestamp!.toIso8601String(),
       'uploaded': uploaded.toString()
     };
-    return await db.update(activityEventTable, justFields, where:'eventId = ?', whereArgs: [event.eventId]);
+    return await db.update(activityEventTable, justFields,
+        where: 'eventId = ?', whereArgs: [event.eventId]);
   }
 
   /// Updates OR checks a StudyActivityEvent, used for updates from the server.
-  Future<int> updateAllStudyActivityEvents(StudyActivityEventList eventList) async {
+  Future<int> updateAllStudyActivityEvents(
+      StudyActivityEventList eventList) async {
     Database db = await database;
     List<StudyActivityEvent> existingList = eventList.items!;
     int addUpdateCounter = 0;
     existingList.forEach((element) async {
-      List<StudyActivityEvent> doesItExist = await getLastStudyActivityEvent(element.eventId!);
+      List<StudyActivityEvent> doesItExist =
+          await getLastStudyActivityEvent(element.eventId!);
       if (doesItExist.length > 0) {
-        if (doesItExist.last.timestamp!.isAtSameMomentAs(element.timestamp!) == false) {
+        if (doesItExist.last.timestamp!.isAtSameMomentAs(element.timestamp!) ==
+            false) {
           int temp = await updateStudyActivityEvent(element);
           addUpdateCounter += temp;
         }
@@ -856,6 +903,4 @@ class DatabaseManager {
     });
     return addUpdateCounter;
   }
-
 }
-

@@ -13,6 +13,9 @@ import 'package:talk_of_the_town/Utilities/shared_preferences_manager.dart';
 import 'package:talk_of_the_town/Utilities/task_activation_manager.dart';
 
 class StartupManager {
+  final ClientManager clientManager = ClientManager();
+  final DatabaseManager databaseManager = DatabaseManager();
+
   Future runStartupFunction() async {
     // if we haven't sent them anywhere yet, we have work to do
     // get participant data
@@ -35,8 +38,7 @@ class StartupManager {
   ///   3. even if we are not being brought to the app by a notification
   ///   4. I'll go ahead and say that we want to also call this after onboarding because I think that was handled recursively in the original implementation
   Future getParticipantData() async {
-    ClientManager clientManager = ClientManager();
-    DatabaseManager databaseManager = DatabaseManager();
+    print("is this happening??");
     bool onboardingOutdated = false;
 
     ParticipantData? gotData = await clientManager.getOnboardingData();
@@ -49,6 +51,8 @@ class StartupManager {
       // TODO: the above comment is from jonathan, but is this still an issue in the new version?
       Map tempData = jsonDecode(jsonEncode(gotData.data));
       OnboardingResponse onboarding = OnboardingResponse.fromJson(tempData);
+      print("onboarding from server");
+      print(onboarding);
 
       // Now we need to check and update the participants table.
       if (await SharedPreferencesManager().getOnboardingCompleted() != false) {
@@ -86,7 +90,7 @@ class StartupManager {
           // Requires prompting for non-anon info, spec. DOB and nickname.
           // As with the endtaskq, redirect and pull info from UpdateParticipantInfo
 
-          // TODO: send them to update participant info, and thend send the info back here
+          // TODO: send them to update participant info, and then send the info back here
           Map? updateInfoData;
 
           // pull info from the update quiz back into onboarding.participants for the update.
@@ -115,8 +119,6 @@ class StartupManager {
   Future<void> updateAllParticipantAges() async {
     String _encode(Object object) =>
         const JsonEncoder.withIndent(' ').convert(object);
-    DatabaseManager databaseManager = DatabaseManager();
-    ClientManager clientManager = ClientManager();
 
     List<Participant> allParticipants =
         await databaseManager.getAllParticipants();
@@ -164,8 +166,6 @@ class StartupManager {
   /// Checks for updates to app config and "timeline"
   Future checkForUpdates() async {
     StartupManager startupManager = StartupManager();
-    ClientManager clientManager = ClientManager();
-    DatabaseManager databaseManager = DatabaseManager();
 
     // Get latest appconfig.
     AppConfig? currentConfig = await clientManager.getCurrentConfig()!;
@@ -256,7 +256,6 @@ class StartupManager {
   ///
   /// Appconfig will contain studies but more importantly geofence_list!
   Future<void> parseConfig(AppConfig appConfig) async {
-    DatabaseManager databaseManager = DatabaseManager();
     //List existingGeofences = await helper.getAllGeofences();
     // We are just going to take for granted that "geofence_list" will be a config element
     List<Map> geofenceList =
@@ -286,8 +285,6 @@ class StartupManager {
 
   /// Parses a timeline and updates or populates a database of tasks, makes notifications, etc.
   Future<void> parseTimeline(Timeline newTimeline) async {
-    ClientManager clientManager = ClientManager();
-    DatabaseManager databaseManager = DatabaseManager();
     // First, parse each ScheduledSession and check it against the database.
     newTimeline.schedule!.forEach((element) async {
       ScheduledSession? checkSession = await databaseManager

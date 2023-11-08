@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:talk_of_the_town/Screens/Auth/await_email_verification.dart';
 import 'package:talk_of_the_town/Screens/Auth/create_account.dart';
 import 'package:talk_of_the_town/Screens/Auth/sign_in.dart';
-import 'package:talk_of_the_town/Screens/Informed%20Consent/consent.dart';
+import 'package:talk_of_the_town/Screens/Consent%20And%20Onboarding/onboarding.dart';
 import 'package:talk_of_the_town/Screens/home.dart';
 import 'package:talk_of_the_town/Screens/loading.dart';
-import 'package:talk_of_the_town/Screens/onboarding.dart';
+import 'package:talk_of_the_town/Screens/Consent%20And%20Onboarding/consent.dart';
 import 'package:talk_of_the_town/Utilities/auth_utils.dart';
 import 'package:talk_of_the_town/Utilities/secure_storage_manager.dart';
 import 'package:talk_of_the_town/main.dart';
@@ -121,7 +121,7 @@ class _CreateAccountState extends State<CreateAccount> {
                                 viewPassword
                                     ? Icons.visibility
                                     : Icons.visibility_off,
-                                color: viewPassword ? Colors.deepPurpleAccent : Colors.grey[600],
+                                color: viewPassword ? Colors.lightGreenAccent : Colors.grey[600],
                               ),
                             ),
                           ),
@@ -148,7 +148,7 @@ class _CreateAccountState extends State<CreateAccount> {
                                 viewPassword2
                                     ? Icons.visibility
                                     : Icons.visibility_off,
-                                color: viewPassword2 ? Colors.deepPurpleAccent : Colors.grey[600],
+                                color: viewPassword2 ? Colors.lightGreenAccent : Colors.grey[600],
                               ),
                             ),
                           ),

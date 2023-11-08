@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:introduction_screen/introduction_screen.dart';
 import 'package:signature/signature.dart';
 import 'package:talk_of_the_town/Screens/learn_more.dart';
-import 'package:talk_of_the_town/Screens/onboarding.dart';
+import 'package:talk_of_the_town/Screens/Consent%20And%20Onboarding/onboarding.dart';
 import 'package:talk_of_the_town/Utilities/client_manager.dart';
 import 'package:talk_of_the_town/Utilities/secure_storage_manager.dart';
 
@@ -93,7 +93,7 @@ class _ConsentState extends State<Consent> {
                 width: 172,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.deepPurple,
+                  color: Colors.lightGreen,
                 ),
                 child: const Icon(
                   Icons.star,
@@ -137,7 +137,7 @@ class _ConsentState extends State<Consent> {
                 width: 172,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.deepPurple,
+                  color: Colors.lightGreen,
                 ),
                 child: const Icon(
                   Icons.access_time,
@@ -179,7 +179,7 @@ class _ConsentState extends State<Consent> {
                 width: 172,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.deepPurple,
+                  color: Colors.lightGreen,
                 ),
                 child: const Icon(
                   Icons.edit,
@@ -223,7 +223,7 @@ class _ConsentState extends State<Consent> {
                 width: 172,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.deepPurple,
+                  color: Colors.lightGreen,
                 ),
                 child: const Padding(
                   padding: EdgeInsets.only(bottom: 8),
@@ -270,7 +270,7 @@ class _ConsentState extends State<Consent> {
                 width: 172,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.deepPurple,
+                  color: Colors.lightGreen,
                 ),
                 child: const Padding(
                   padding: EdgeInsets.only(bottom: 4),
@@ -317,7 +317,7 @@ class _ConsentState extends State<Consent> {
                 width: 172,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.deepPurple,
+                  color: Colors.lightGreen,
                 ),
                 child: const Icon(
                   Icons.health_and_safety,
@@ -361,7 +361,7 @@ class _ConsentState extends State<Consent> {
                 width: 172,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.deepPurple,
+                  color: Colors.lightGreen,
                 ),
                 child: const Icon(
                   Icons.thumb_up,
@@ -405,7 +405,7 @@ class _ConsentState extends State<Consent> {
                 width: 172,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.deepPurple,
+                  color: Colors.lightGreen,
                 ),
                 child: const Icon(
                   Icons.info,
@@ -449,7 +449,7 @@ class _ConsentState extends State<Consent> {
               // key info
               Text("Key Information",
                   style:
-                      summaryTextStyle.copyWith(color: Colors.deepPurple[300])),
+                      summaryTextStyle.copyWith(color: Colors.lightGreen[300])),
               const SizedBox(height: 8),
               Text(
                   "The goal of this project is to understand how children learn from their families outside of school.\nYour participation in this study is completely volluntary.\nParticipation in this study involves completing short activities lasting no more than 5 minutes each.\nEach activity involves recording a short conversation with your children",
@@ -458,7 +458,7 @@ class _ConsentState extends State<Consent> {
               // time commitment
               Text("Goals",
                   style:
-                      summaryTextStyle.copyWith(color: Colors.deepPurple[300])),
+                      summaryTextStyle.copyWith(color: Colors.lightGreen[300])),
               const SizedBox(height: 8),
               Text(
                   "Talk of the Town overview and purpose: How children learn outside of school.",
@@ -471,7 +471,7 @@ class _ConsentState extends State<Consent> {
               // time commitment
               Text("Time Commitment",
                   style:
-                      summaryTextStyle.copyWith(color: Colors.deepPurple[300])),
+                      summaryTextStyle.copyWith(color: Colors.lightGreen[300])),
               const SizedBox(height: 8),
               Text("Each activity will take about 5 minutes.",
                   style: bodyTextStyle),
@@ -483,7 +483,7 @@ class _ConsentState extends State<Consent> {
               // task description
               Text("Study Tasks",
                   style:
-                      summaryTextStyle.copyWith(color: Colors.deepPurple[300])),
+                      summaryTextStyle.copyWith(color: Colors.lightGreen[300])),
               const SizedBox(height: 8),
               Text(
                   "Each activity involves recording a short conversation with your child(ren).",
@@ -496,7 +496,7 @@ class _ConsentState extends State<Consent> {
               // data gathering
               Text("Data Gathering",
                   style:
-                      summaryTextStyle.copyWith(color: Colors.deepPurple[300])),
+                      summaryTextStyle.copyWith(color: Colors.lightGreen[300])),
               const SizedBox(height: 8),
               Text(
                   "We are looking at what parents and children talk about, how they say it, and where.",
@@ -509,7 +509,7 @@ class _ConsentState extends State<Consent> {
               // privacy
               Text("Privacy",
                   style:
-                      summaryTextStyle.copyWith(color: Colors.deepPurple[300])),
+                      summaryTextStyle.copyWith(color: Colors.lightGreen[300])),
               const SizedBox(height: 8),
               Text(
                   "All identifiable information will be removed from your data, and your recordings will never be shared unless you give us specific permission to do so.",
@@ -522,7 +522,7 @@ class _ConsentState extends State<Consent> {
               // health
               Text("Health",
                   style:
-                      summaryTextStyle.copyWith(color: Colors.deepPurple[300])),
+                      summaryTextStyle.copyWith(color: Colors.lightGreen[300])),
               const SizedBox(height: 8),
               Text(
                   "Health and safety: There are no known risks associated with the study, but please use this app safely.",
@@ -535,7 +535,7 @@ class _ConsentState extends State<Consent> {
               // benefits
               Text("Benefits to you",
                   style:
-                      summaryTextStyle.copyWith(color: Colors.deepPurple[300])),
+                      summaryTextStyle.copyWith(color: Colors.lightGreen[300])),
               const SizedBox(height: 8),
               Text(
                   "Your participation in this study is completely voluntary. You can get small gifts for your child(ren) after 10 activities.",
@@ -548,7 +548,7 @@ class _ConsentState extends State<Consent> {
               // about us
               Text("About Us",
                   style:
-                      summaryTextStyle.copyWith(color: Colors.deepPurple[300])),
+                      summaryTextStyle.copyWith(color: Colors.lightGreen[300])),
               const SizedBox(height: 8),
               Text(
                   "You can contact us or the Harvard University Institutional Review Board at any time.",
@@ -609,7 +609,12 @@ class _ConsentState extends State<Consent> {
           String b64Signature = base64Encode(sig!);
 
           try {
-            await clientManager.uploadSignature(firstName, lastName, b64Signature);
+            bool? success = await clientManager.uploadSignature(firstName, lastName, b64Signature);
+            print("success ${success}");
+            if (success == null) {
+              return;
+            }
+
             secureStorageManager.setConsented(true);
 
             // ignore: use_build_context_synchronously
@@ -632,7 +637,7 @@ class _ConsentState extends State<Consent> {
       overrideNext: !onReviewPage
           ? null
           : IconButton(
-              icon: Icon(Icons.arrow_forward, color: Colors.deepPurple[300]),
+              icon: Icon(Icons.arrow_forward, color: Colors.lightGreen[300]),
               onPressed: () async {
                 dynamic result = await showDialog(
                     barrierDismissible: false,
@@ -651,7 +656,7 @@ class _ConsentState extends State<Consent> {
                           ),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.deepPurple,
+                                backgroundColor: Colors.lightGreen,
                                 foregroundColor: Colors.white),
                             child: const Text("AGREE"),
                             onPressed: () {
@@ -678,7 +683,7 @@ class _ConsentState extends State<Consent> {
         size: Size(5.0, 5.0),
         spacing: EdgeInsets.symmetric(horizontal: 4),
         activeSize: Size(22.0, 10.0),
-        activeColor: Colors.deepPurple,
+        activeColor: Colors.lightGreen,
         activeShape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(25.0)),
         ),
