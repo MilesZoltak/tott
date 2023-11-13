@@ -342,24 +342,22 @@ class _BundleState extends State<Bundle> {
     String base64Content = base64Encode(contentBytes);
 
     // encrypt content
-    // String publicPem = await rootBundle.loadString('assets/public_key.pem');
-    // RSAPublicKey publicKey = RSAKeyParser().parse(publicPem) as RSAPublicKey;
-    // Encrypter encrypter = Encrypter(RSA(publicKey: publicKey));
-    // Uint8List encryptedContent = encrypter.encrypt(base64Content).bytes;
+    String publicPem = await rootBundle.loadString('assets/public_key.pem');
+    RSAPublicKey publicKey = RSAKeyParser().parse(publicPem) as RSAPublicKey;
+    Encrypter encrypter = Encrypter(RSA(publicKey: publicKey));
+    Uint8List encryptedContent = encrypter.encrypt(base64Content).bytes;
 
     //
     // //do md5 hash of that content
-    // Digest digest = md5.convert(encryptedContent);
-    Digest digest = md5.convert(contentBytes);
+    Digest digest = md5.convert(encryptedContent);
+    // Digest digest = md5.convert(contentBytes);
     String md5Content = base64Encode(digest.bytes);
 
     // return {"md5Content": md5Content, "numBytes": contentBytes.length};
     return {
       "md5Content": md5Content,
-      "numBytes": utf8
-          .encode(base64Content)
-          .length,
-      "contentBytes": contentBytes
+      "numBytes": encryptedContent.length,
+      "contentBytes": encryptedContent
     };
   }
 

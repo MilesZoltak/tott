@@ -359,19 +359,24 @@ class ClientManager {
     Encrypter encrypter = Encrypter(RSA(publicKey: publicKey));
     // Uint8List encryptedContent = encrypter.encrypt(base64Content).bytes;
     Uint8List encryptedContent = encryptLargeContent(contentBytes2, encrypter);
+    print("num bytes unencrypted = ${utf8.encode(base64Content).length}");
 
     //do md5 hash of that content
     Digest digest = md5.convert(encryptedContent);
     // TODO: delete this and get the top stuff going so we actually encrypt
     // Digest digest = md5.convert(contentBytes);
+    print("num bytes encrypted = ${encryptedContent.length}");
+    print("which should be the same as length of list: ${encryptedContent.toList().length}");
+
 
     String md5Content = base64Encode(digest.bytes);
 
     // return {"md5Content": md5Content, "numBytes": contentBytes.length};
     return {
       "md5Content": md5Content,
-      "numBytes": utf8.encode(base64Content).length,
-      "contentBytes": contentBytes2
+      "numBytes": encryptedContent.length,
+      // "contentBytes": contentBytes2
+      "contentBytes": encryptedContent
     };
   }
 
@@ -387,9 +392,8 @@ class ClientManager {
       "contentLength": numBytes,
       "contentType": "application/zip",
       "contentMd5": md5,
-      "encrypted": true
+      // "encrypted": false
     };
-    print("encrypted is false");
 
     String sessionToken = await SecureStorageManager().getSessionToken();
     try {

@@ -1373,6 +1373,8 @@ class ToTOnboardingState extends State<ToTOnboarding> {
                         ParticipantData onboardingResults = ParticipantData(
                             identifier: 'onboarding',
                             data: _encode(onboardingResponse.toMap()));
+                        print("hello?");
+                        print(onboardingResults.data);
                         clientManager.uploadOnboardingData(onboardingResults);
                         print("uploaded onboarding");
 
